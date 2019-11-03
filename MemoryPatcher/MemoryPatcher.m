@@ -49,14 +49,14 @@ Patch Patch1;
         mySwitch.thumbTintColor = [UIColor blueColor];
         [mySwitch addTarget:self action:@selector(valueChanged:) forControlEvents:(UIControlEventValueChanged)];
         [[UIApplication sharedApplication].keyWindow addSubview:mySwitch];
-		MemoryPatch2_64(0x101C4E020,0xD65F03C01E37F000);
-		MemoryPatch2(0x101C22738,0xD65F03C0);
-		MemoryPatch2(0x101D96384,0x1E2703E1);
-		MemoryPatch2(0x1021C81FC,0xD65F03C0);
-		MemoryPatch2(0x101D9638C,0x1E2703E0);
-		MemoryPatch2(0x103A43138,0xD503201F);
-		
-		
+        MemoryPatch2_64(0x101C4E020,0xD65F03C01E37F000);
+        MemoryPatch2(0x101C22738,0xD65F03C0);
+        MemoryPatch2(0x101D96384,0x1E2703E1);
+        MemoryPatch2(0x1021C81FC,0xD65F03C0);
+        MemoryPatch2(0x101D9638C,0x1E2703E0);
+        MemoryPatch2(0x103A43138,0xD503201F);
+        
+        
     });
     
    
@@ -91,7 +91,7 @@ MemoryRestored(restore);
 void MemoryRestored(MemoryRestore *restore){
     
     int result = vm_protect(mach_task_self(),(vm_address_t)restore->address,restore->size,0,19);
-    NSLog(@"------restore.address is %0llX\nrestore value is %X",restore->address,restore->value);
+    NSLog(@"------restore.address is %0llX\nrestore value is %llX",restore->address,restore->value);
     memcpy((void *)restore->address,&restore->value,restore->size);
     result = vm_protect(mach_task_self(),(vm_address_t)restore->address,restore->size,0,VM_PROT_READ | VM_PROT_EXECUTE);
     NSLog(@"-----Restored Successfully");
@@ -108,7 +108,7 @@ MemoryPatch(TargetAddr,(uint32_t)Bytes,orig_value);
 MemoryPatch64(TargetAddr,Bytes,orig_value);
 
 
-
+}
 
 }
 
@@ -120,11 +120,11 @@ void MemoryPatch(uint64_t TargetAddr,uint32_t Bytes,MemoryRestore *orig_value){
     int result = vm_protect(mach_task_self(),(vm_address_t)real_address,orig_value->size,0,19);
     orig_value->address = real_address;
     orig_value->value = *((uint32_t *)real_address);
-    NSLog(@"--------orig_value is %08X",orig_value->value);
+    NSLog(@"--------orig_value is %llX",orig_value->value);
     *((uint32_t *)real_address) = Bytes;
     NSLog(@"--------modfied into %08X",*((uint32_t *)real_address));
-    result = vm_protect(mach_task_self(),(vm_address_t)real_address,orig_value->size,0,VM_PROT_READ | VM_PROT_EXECUTE); 
-	
+    result = vm_protect(mach_task_self(),(vm_address_t)real_address,orig_value->size,0,VM_PROT_READ | VM_PROT_EXECUTE);
+    
 }
 void MemoryPatch64(uint64_t TargetAddr,uint64_t Bytes,MemoryRestore *orig_value){
 
@@ -134,10 +134,10 @@ void MemoryPatch64(uint64_t TargetAddr,uint64_t Bytes,MemoryRestore *orig_value)
     int result = vm_protect(mach_task_self(),(vm_address_t)real_address,orig_value->size,0,19);
     orig_value->address = real_address;
     orig_value->value = *((uint64_t *)real_address);
-    NSLog(@"--------orig_value is %016lX",orig_value->value);
+    NSLog(@"--------orig_value is %0llX",orig_value->value);
     *((uint64_t *)real_address) = Bytes;
-    NSLog(@"--------modfied into %016lX",*((uint64_t *)real_address));
-    result = vm_protect(mach_task_self(),(vm_address_t)real_address,orig_value->size,0,VM_PROT_READ | VM_PROT_EXECUTE); 
+    NSLog(@"--------modfied into %0llX",*((uint64_t *)real_address));
+    result = vm_protect(mach_task_self(),(vm_address_t)real_address,orig_value->size,0,VM_PROT_READ | VM_PROT_EXECUTE);
 
 }
 
@@ -146,9 +146,9 @@ void MemoryPatch2_64(uint64_t TargetAddr,uint64_t Bytes){
     uint64_t ASLR = _dyld_get_image_vmaddr_slide(0);
     uint64_t real_address = TargetAddr + ASLR;
     int result = vm_protect(mach_task_self(),(vm_address_t)real_address,sizeof(uint64_t),0,19);
-    NSLog(@"--------orig_value is %016lX",*((uint64_t *)real_address);
+    NSLog(@"--------orig_value is %llX",*((uint64_t *)real_address));
     *((uint64_t *)real_address) = Bytes;
-    NSLog(@"--------modfied into %016lX",*((uint64_t *)real_address));
+    NSLog(@"--------modfied into %0llX",*((uint64_t *)real_address));
     result = vm_protect(mach_task_self(),(vm_address_t)real_address,sizeof(uint64_t),0,VM_PROT_READ | VM_PROT_EXECUTE);
 
 }
@@ -158,7 +158,7 @@ void MemoryPatch2(uint64_t TargetAddr,uint32_t Bytes){
     uint64_t ASLR = _dyld_get_image_vmaddr_slide(0);
     uint64_t real_address = TargetAddr + ASLR;
     int result = vm_protect(mach_task_self(),(vm_address_t)real_address,sizeof(uint32_t),0,19);
-    NSLog(@"--------orig_value is %08X",*((uint32_t *)real_address);
+    NSLog(@"--------orig_value is %08X",*((uint32_t *)real_address));
     *((uint32_t *)real_address) = Bytes;
     NSLog(@"--------modfied into %08X",*((uint32_t *)real_address));
     result = vm_protect(mach_task_self(),(vm_address_t)real_address,sizeof(uint32_t),0,VM_PROT_READ | VM_PROT_EXECUTE);
